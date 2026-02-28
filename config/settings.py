@@ -8,7 +8,7 @@ SECRET_KEY = 'django-insecure-mp-exam-app-secret-key-change-in-production'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*', 'aadarshlodhi39.pythonanywhere.com']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
