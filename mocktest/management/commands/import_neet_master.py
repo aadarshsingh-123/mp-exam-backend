@@ -1,5 +1,6 @@
 import json
 import os
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from mocktest.models import Question
 
@@ -7,7 +8,7 @@ class Command(BaseCommand):
     help = 'Import NEET questions from master JSON file'
 
     def handle(self, *args, **kwargs):
-        json_file_path = r'E:\new Project\mp-exam-questions\neet-questions\all_neet_questions.json'
+        json_file_path = os.path.join(settings.BASE_DIR, 'all_neet_questions.json')
         
         if not os.path.exists(json_file_path):
             self.stdout.write(self.style.ERROR(f'File not found: {json_file_path}'))
