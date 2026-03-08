@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, get_user_model
 from django.db.models import Count
-from .serializers import RegisterSerializer, UserSerializer, LoginSerializer, StudentListSerializer
+from .serializers import RegisterSerializer, UserSerializer, LoginSerializer, StudentListSerializer, UpdateProfileSerializer
 
 User = get_user_model()
 
@@ -44,6 +44,29 @@ class ProfileView(APIView):
     def get(self, request):
         return Response(UserSerializer(request.user).data)
 
+    def patch(self, request):
+        serializer = UpdateProfileSerializer(request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(UserSerializer(user).data)
+
+
+class PublicRegisterView(APIView):
+    """Public registration endpoint"""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'user': UserSerializer(user).data,
+            'tokens': {
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+            }
+        }, status=status.HTTP_201_CREATED)
 
 # ===== ADMIN ONLY ENDPOINTS =====
 

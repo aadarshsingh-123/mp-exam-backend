@@ -9,6 +9,6 @@ class TestResultAdmin(admin.ModelAdmin):
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ['category', 'exam_name', 'year', 'text']
-    list_filter = ['category', 'exam_name', 'year']
+    list_display = ['exam_type', 'category', 'exam_name', 'year', 'text']
+    list_filter = ['exam_type', 'category', 'exam_name', 'year']
     search_fields = ['text', 'category', 'exam_name']

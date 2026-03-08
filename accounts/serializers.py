@@ -7,9 +7,11 @@ User = get_user_model()
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=6)
 
+    profile_image = serializers.ImageField(required=False, allow_null=True)
+
     class Meta:
         model = User
-        fields = ['email', 'full_name', 'password']
+        fields = ['email', 'full_name', 'password', 'exam_type', 'profile_image']
 
     def create(self, validated_data):
         email = validated_data['email']
@@ -24,7 +26,9 @@ class RegisterSerializer(serializers.ModelSerializer):
             username=username,
             email=email,
             full_name=validated_data.get('full_name', ''),
-            password=validated_data['password']
+            password=validated_data['password'],
+            exam_type=validated_data.get('exam_type', 'other'),
+            profile_image=validated_data.get('profile_image', None),
         )
         return user
 
@@ -32,7 +36,20 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'full_name', 'username', 'is_staff', 'date_joined']
+        fields = ['id', 'email', 'full_name', 'username', 'is_staff', 'date_joined', 'exam_type', 'profile_image']
+
+
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False, min_length=6)
+
+    class Meta:
+        model = User
+        fields = ['full_name', 'profile_image', 'password']
+
+    def update(self, instance, validated_data):
+        if 'password' in validated_data:
+            instance.set_password(validated_data.pop('password'))
+        return super().update(instance, validated_data)
 
 
 class LoginSerializer(serializers.Serializer):
@@ -45,4 +62,5 @@ class StudentListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'full_name', 'username', 'is_staff', 'date_joined', 'is_active', 'tests_count']
+        fields = ['id', 'email', 'full_name', 'username', 'is_staff', 'date_joined', 'is_active', 'tests_count', 'exam_type', 'profile_image']
+

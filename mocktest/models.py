@@ -28,6 +28,11 @@ class TestResult(models.Model):
         return f"{self.user.full_name} - {self.test_name} - {self.obtained_marks}/{self.total_marks}"
 
 class Question(models.Model):
+    EXAM_TYPE_CHOICES = [
+        ('other', 'Other (MP Exams - Default)'),
+        ('neet', 'NEET'),
+    ]
+
     category = models.CharField(max_length=100)
     text = models.TextField()
     opt1 = models.TextField()
@@ -38,8 +43,14 @@ class Question(models.Model):
     exam_name = models.CharField(max_length=100, blank=True, null=True)
     year = models.CharField(max_length=20, blank=True, null=True)
     explanation = models.TextField(blank=True, null=True)
+    exam_type = models.CharField(
+        max_length=10,
+        choices=EXAM_TYPE_CHOICES,
+        default='other',
+        help_text='NEET questions are shown only to NEET students'
+    )
     
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"[{self.category}] {self.text[:50]}"
+        return f"[{self.exam_type.upper()}][{self.category}] {self.text[:50]}"

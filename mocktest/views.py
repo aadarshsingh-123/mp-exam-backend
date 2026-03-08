@@ -86,15 +86,21 @@ class LeaderboardView(APIView):
         return Response(data)
 
 class QuestionListView(generics.ListAPIView):
-    """Fetch questions from backend. Can optionally filter by category and randomize."""
+    """Fetch questions from backend. Filters by user's exam_type."""
     serializer_class = QuestionSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     pagination_class = None
 
     def get_queryset(self):
         queryset = Question.objects.all()
         category = self.request.query_params.get('category', None)
         limit = self.request.query_params.get('limit', None)
+        
+        # Filter by exam_type - use user's exam_type or query param
+        exam_type = self.request.query_params.get('exam_type', None)
+        if not exam_type:
+            exam_type = getattr(self.request.user, 'exam_type', 'other')
+        queryset = queryset.filter(exam_type=exam_type)
 
         if category and category != 'all':
             queryset = queryset.filter(category=category)
@@ -102,9 +108,36 @@ class QuestionListView(generics.ListAPIView):
         if limit:
             try:
                 limit = int(limit)
-                # For sqlite/postgres, order_by('?') does random
                 queryset = queryset.order_by('?')[:limit]
             except ValueError:
                 pass
         
         return queryset
+
+
+class QuestionCategoriesView(APIView):
+    """Get available question categories for the user's exam type."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        exam_type = request.query_params.get('exam_type', None)
+        if not exam_type:
+            exam_type = getattr(request.user, 'exam_type', 'other')
+        
+        categories = (
+            Question.objects.filter(exam_type=exam_type)
+            .values_list('category', flat=True)
+            .distinct()
+            .order_by('category')
+        )
+        
+        category_data = []
+        for cat in categories:
+            count = Question.objects.filter(exam_type=exam_type, category=cat).count()
+            category_data.append({'name': cat, 'count': count})
+        
+        return Response({
+            'exam_type': exam_type,
+            'categories': category_data,
+            'total_questions': Question.objects.filter(exam_type=exam_type).count(),
+        })

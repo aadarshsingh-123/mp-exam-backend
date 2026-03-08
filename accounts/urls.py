@@ -1,8 +1,9 @@
 from django.urls import path
-from .views import LoginView, ProfileView, AdminAddStudentView, AdminStudentListView, AdminDeleteStudentView
+from .views import LoginView, ProfileView, PublicRegisterView, AdminAddStudentView, AdminStudentListView, AdminDeleteStudentView
 
 urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
+    path('register/', PublicRegisterView.as_view(), name='register'),
     path('profile/', ProfileView.as_view(), name='profile'),
     # Admin only
     path('admin/students/', AdminStudentListView.as_view(), name='admin-student-list'),
